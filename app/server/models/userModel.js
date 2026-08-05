@@ -1,18 +1,18 @@
 import mongoose from 'mongoose'
 
-let userSchema  = new mongoose.Schema({
+let userModal  = new mongoose.Schema({
     name:{
         type:String,
-        require:[true, "please enter your name"]
+        required:[false, "please enter your name"]
     },
     email:{
         type:String,
-        require:[true,'please enter your email'],
+        required:[true,'please enter your email'],
         unique:true
     },
     password:{
         type:String,
-        require:[true,"please enter your password"],
+        required:[true,"please enter your password"],
         minLength:[8,"password should have atlest 8 char"],
         select:false,
     },
@@ -33,5 +33,16 @@ let userSchema  = new mongoose.Schema({
     resetPasswordExpire: Date,
 })
 
+// userSchema.pre("save",async (next)=>{
 
-module.exports =mongoose.model("User",userSchema)
+//   if(!this.isModified("password")){
+//      next()
+//   }
+//   this.password = await bcrypt.hash(this.password,10)
+//   console.log("check password  ",this.password)
+
+// })
+
+
+// module.exports =mongoose.model("User",userModal)
+export default  mongoose.model("User",userModal)
