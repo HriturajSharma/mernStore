@@ -14,7 +14,7 @@ let userModal  = new mongoose.Schema({
         type:String,
         required:[true,"please enter your password"],
         minLength:[8,"password should have atlest 8 char"],
-        select:false,
+        
     },
     avatar:{
         url:{
