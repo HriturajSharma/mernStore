@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 
+import cookieParser from "cookie-parser";
 import Userrouter from "./Routes/Register.js";
 import dbconn from "./utlis/db.js";
 
@@ -12,6 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser())
 
 dbconn();
 
