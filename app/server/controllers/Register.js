@@ -1,5 +1,9 @@
 import bcrypt from 'bcrypt'
+import dotenv from 'dotenv'
+import jsonWebToken from 'jsonwebtoken'
 import userModel from '../models/userModel.js'
+
+dotenv.config()
 
 const register = async (req, res) => {
   try {
@@ -47,8 +51,28 @@ const login = async (req, res) => {
     res.status(401).json({ success: false, message: 'Invalid password' })
   }
 
-  res.status(200).json({ success: true, message: 'login successfully' })
+  console.log('check  === >> ** ', req.body)
 
-  console.log('compare password check  == > ', validUser)
+  let token = jsonWebToken.sign({ email: user.email }, process.env.JwtToken, {
+    expiresIn: '5min'
+  })
+
+  let setCookies = res?.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NodeEnv == 'prod',
+    sameSite: 'lax'
+  })
+
+  if (!setCookies) {
+    return res.status(300).json({ success: false, message: 'please login' })
+  }
+
+  return res
+    .status(200)
+    .json({
+      success: true,
+      message: 'login successfully',
+      messageData: `welcome ${user.email}`
+    })
 }
 export { register, login }
