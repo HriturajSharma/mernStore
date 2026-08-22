@@ -1,7 +1,9 @@
 import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 import dotenv from 'dotenv'
 import jsonWebToken from 'jsonwebtoken'
 import userModel from '../models/userModel.js'
+import mailFire from '../utlis/mailFilre.js'
 
 dotenv.config()
 
@@ -36,6 +38,7 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res) => {
+  console.log('crypto', crypto)
   let { email, password } = req.body
 
   let user = await userModel.findOne({ email })
@@ -67,12 +70,48 @@ const login = async (req, res) => {
     return res.status(300).json({ success: false, message: 'please login' })
   }
 
-  return res
-    .status(200)
-    .json({
-      success: true,
-      message: 'login successfully',
-      messageData: `welcome ${user.email}`
-    })
+  return res.status(200).json({
+    success: true,
+    message: 'login successfully',
+    messageData: `welcome ${user.email}`
+  })
 }
-export { register, login }
+
+const forgetpassword = async (req, res) => {
+  try {
+    let { email } = req.body
+    let isUserExit = await userModel.findOne({ email })
+    console.log('isUserExit', isUserExit)
+
+    if (!isUserExit) {
+      return res
+        .status(301)
+        .json({ success: false, message: 'Invalid user please register first' })
+    }
+
+    let resetToken = crypto.randomBytes(32).toString('hex')
+
+    let HashToken = crypto.createHash('sha256').update(resetToken).digest('hex')
+
+    
+    isUserExit.resetPasswordToken = HashToken
+    isUserExit.resetPasswordExpire = Date.now() +5 * 60 * 1000
+    
+    await isUserExit.save()
+    let resetLink = `http://localhost:${process.env.PORT}/api/forget-password/${resetToken}`
+    
+    await mailFire(
+      email,
+      'Reset password',
+      `click here to reset password : ${resetLink}`
+    )
+
+    return res
+      .status(200)
+      .json({ success: true, message: `mail sanded successfully 📧 to ${email} ` })
+  } catch (error) {
+    return res.status(501).json({ success: false, message: error })
+  }
+}
+
+export { register, login, forgetpassword }
