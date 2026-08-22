@@ -77,7 +77,7 @@ const login = async (req, res) => {
   })
 }
 
-const forgetpassword = async (req, res) => {
+const forgetPassword = async (req, res) => {
   try {
     let { email } = req.body
     let isUserExit = await userModel.findOne({ email })
@@ -93,25 +93,76 @@ const forgetpassword = async (req, res) => {
 
     let HashToken = crypto.createHash('sha256').update(resetToken).digest('hex')
 
-    
     isUserExit.resetPasswordToken = HashToken
-    isUserExit.resetPasswordExpire = Date.now() +5 * 60 * 1000
-    
+    isUserExit.resetPasswordExpire = Date.now() + 5 * 60 * 1000
+
     await isUserExit.save()
-    let resetLink = `http://localhost:${process.env.PORT}/api/forget-password/${resetToken}`
-    
+    let resetLink = `http://localhost:${process.env.PORT}/api/reset-password/${resetToken}`
+
     await mailFire(
       email,
       'Reset password',
       `click here to reset password : ${resetLink}`
     )
 
-    return res
-      .status(200)
-      .json({ success: true, message: `mail sanded successfully 📧 to ${email} ` })
+    return res.status(200).json({
+      success: true,
+      message: `mail sanded successfully 📧 to ${email} `
+    })
   } catch (error) {
     return res.status(501).json({ success: false, message: error })
   }
 }
 
-export { register, login, forgetpassword }
+const resetPassword = async (req, res) => {
+  let { password } = req.body
+  let { token } = req?.params
+
+  console.log("🔥 RESET ROUTE HIT");
+  console.log("TOKEN:", req.params.token);
+
+  return res.status(200).json({
+      success: true,
+      message: "Reset route is working",
+      token: req.params.token
+  });
+  console.log("token === ? ",token)
+
+  try {
+    // let isUserExit = userModel.findOne({email})
+    let hashesToken  = crypto.createHash("sha256").update(token).digest("hex")
+
+    let user = await userModel.findOne({
+     resetPasswordToken:hashesToken,
+     resetPasswordExpire:{$gt:Date.now()}
+    })
+
+    console.log("check  == > user ",user)
+
+    if(!user){
+      return res.status(401).json({success:false,message:"invalid or expired token !"})
+    }
+
+    let HashPassword = await bcrypt.hash(password,10)
+
+    console.log("check password HashPassword",HashPassword)
+
+    user.password = HashPassword;
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+
+
+    await user.save()
+
+    res.status(201).json({success:true,message:"password updated successfully"})
+
+
+
+  } catch (error) {
+    return res.status(501).json({ success: true, message: error })
+  }
+}
+
+export { register, login, forgetPassword, resetPassword }
