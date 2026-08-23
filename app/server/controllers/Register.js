@@ -92,6 +92,7 @@ const forgetPassword = async (req, res) => {
     let resetToken = crypto.randomBytes(32).toString('hex')
 
     let HashToken = crypto.createHash('sha256').update(resetToken).digest('hex')
+    console.log("check hashpassword =? ", HashToken)
 
     isUserExit.resetPasswordToken = HashToken
     isUserExit.resetPasswordExpire = Date.now() + 5 * 60 * 1000
@@ -120,12 +121,6 @@ const resetPassword = async (req, res) => {
 
   console.log("🔥 RESET ROUTE HIT");
   console.log("TOKEN:", req.params.token);
-
-  return res.status(200).json({
-      success: true,
-      message: "Reset route is working",
-      token: req.params.token
-  });
   console.log("token === ? ",token)
 
   try {
@@ -144,25 +139,19 @@ const resetPassword = async (req, res) => {
     }
 
     let HashPassword = await bcrypt.hash(password,10)
-
     console.log("check password HashPassword",HashPassword)
-
     user.password = HashPassword;
-
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 
 
-
     await user.save()
-
     res.status(201).json({success:true,message:"password updated successfully"})
-
-
 
   } catch (error) {
     return res.status(501).json({ success: true, message: error })
   }
 }
 
-export { register, login, forgetPassword, resetPassword }
+export { forgetPassword, login, register, resetPassword }
+
