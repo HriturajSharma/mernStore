@@ -92,7 +92,7 @@ const forgetPassword = async (req, res) => {
     let resetToken = crypto.randomBytes(32).toString('hex')
 
     let HashToken = crypto.createHash('sha256').update(resetToken).digest('hex')
-    console.log("check hashpassword =? ", HashToken)
+    console.log('check hashpassword =? ', HashToken)
 
     isUserExit.resetPasswordToken = HashToken
     isUserExit.resetPasswordExpire = Date.now() + 5 * 60 * 1000
@@ -119,39 +119,40 @@ const resetPassword = async (req, res) => {
   let { password } = req.body
   let { token } = req?.params
 
-  console.log("🔥 RESET ROUTE HIT");
-  console.log("TOKEN:", req.params.token);
-  console.log("token === ? ",token)
+  console.log('🔥 RESET ROUTE HIT')
+  console.log('TOKEN:', req.params.token)
+  console.log('token === ? ', token)
 
   try {
     // let isUserExit = userModel.findOne({email})
-    let hashesToken  = crypto.createHash("sha256").update(token).digest("hex")
+    let hashesToken = crypto.createHash('sha256').update(token).digest('hex')
 
     let user = await userModel.findOne({
-     resetPasswordToken:hashesToken,
-     resetPasswordExpire:{$gt:Date.now()}
+      resetPasswordToken: hashesToken,
+      resetPasswordExpire: { $gt: Date.now() }
     })
 
-    console.log("check  == > user ",user)
+    console.log('check  == > user ', user)
 
-    if(!user){
-      return res.status(401).json({success:false,message:"invalid or expired token !"})
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'invalid or expired token !' })
     }
 
-    let HashPassword = await bcrypt.hash(password,10)
-    console.log("check password HashPassword",HashPassword)
-    user.password = HashPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-
+    let HashPassword = await bcrypt.hash(password, 10)
+    console.log('check password HashPassword', HashPassword)
+    user.password = HashPassword
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpire = undefined
 
     await user.save()
-    res.status(201).json({success:true,message:"password updated successfully"})
-
+    res
+      .status(201)
+      .json({ success: true, message: 'password updated successfully' })
   } catch (error) {
     return res.status(501).json({ success: true, message: error })
   }
 }
 
 export { forgetPassword, login, register, resetPassword }
-
