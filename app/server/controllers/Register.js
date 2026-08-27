@@ -155,4 +155,21 @@ const resetPassword = async (req, res) => {
   }
 }
 
-export { forgetPassword, login, register, resetPassword }
+const getAllUser = async (req, res) => {
+  try {
+    let user = await userModel.find().select("-__v -resetPasswordToken -resetPasswordExpire");
+    console.log('check  === >  ', user)
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: 'fetched successfully',
+        response: { data: user, length: user?.length }
+      })
+  } catch (error) {
+    res.status(400).json({ success: false, message: error })
+  }
+}
+
+export { forgetPassword, getAllUser, login, register, resetPassword }
