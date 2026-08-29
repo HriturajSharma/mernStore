@@ -16,9 +16,7 @@ let userModal = new mongoose.Schema({
     minLength: [8, 'password should have AtLest 8 char']
   },
   avatar: {
-    url: {
       type: String
-    }
   },
   role: {
     type: String,
