@@ -11,6 +11,9 @@ const register = async (req, res) => {
   try {
     let { name, email, password } = req.body
 
+
+    console.log("req.file ____________",req.file)
+
     let existing = await userModel.findOne({ email })
     if (existing) {
       return res
@@ -22,7 +25,8 @@ const register = async (req, res) => {
     let user = await userModel.create({
       name: name,
       email: email,
-      password: protectedPass
+      password: protectedPass,
+      avatar: req.file ? req.file.path : null
     })
 
     return res
@@ -153,6 +157,27 @@ const resetPassword = async (req, res) => {
   }
 }
 
+const Logout = async (req, res) => {
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NodeEnv === 'prod',
+      sameSite: 'lax'
+    })
+   return res.status(201).json({success:true,message:"successfully logout"})
+
+
+  } catch (error) {
+    return res.status(401).json({success:false,message:"somthing went wrong."})
+  }
+}
+
+
+
+
+
+
+
 const getAllUser = async (req, res) => {
   try {
     let user = await userModel
@@ -169,4 +194,9 @@ const getAllUser = async (req, res) => {
   }
 }
 
-export { forgetPassword, getAllUser, login, register, resetPassword }
+
+
+
+
+export { forgetPassword, getAllUser, login, Logout, register, resetPassword }
+
